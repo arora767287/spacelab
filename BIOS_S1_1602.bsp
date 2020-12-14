@@ -1,6 +1,6 @@
 ' {$STAMP BS2p}
 ' {$PBASIC 2.5}
-' {$PORT COM6}
+' {$PORT COM3}
 '**************************************************
 '
 '  Program Slot 1 =  Reset, calibration, and initialization procedures

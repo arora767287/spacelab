@@ -412,7 +412,7 @@ FoundEvent:
   event2,                     'Event 2 (
   event3,                     'Event 3 (
   Event4,                     'Event 4 (
-  LightOn,                    'Event 5 (
+  CameraLight,                    'Event 5 (
   Reset,                      'Event 6 (
   PumpOn]                     'Event 7 (
 
@@ -480,8 +480,8 @@ Event4: DEBUG CR,"REB4:Replay" ,CR
 DmpOut: STORE DataStorage
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
-LightOn:
-      DEBUG "Light turning on"
+CameraLight:
+      DEBUG "camera taking photo"
       I2COUT internI2C, PCF8574address, [%00100000]  'GOES BACKWARDS!!! Each digit represents a pin being on or off
       'add camera stuff
      ' Event1: DEBUG CR,"REB1: TakePhoto",CR
@@ -506,6 +506,11 @@ PumpOn:
       DEBUG "Pump turning on"
       I2COUT internI2C, PCF8574address, [%10000000] 'GOES BACKWARDS!!! Each digit represents a pin being on or off
       RETURN
+LightOn:
+      DEBUG "Pump turning on"
+      I2COUT internI2C, PCF8574address, [%00100000]
+      RETURN
+
 
 
 
@@ -543,46 +548,141 @@ P3vector:
 
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  00,   00,   $FF,     06   'Row 0
-        DATA  00,  00,   01,   $FF,     05   'Row 1
-        DATA  00,  00,   02,   $FF,     07   'Row 2
-        DATA  00,  00,   03,   $FF,     00   'Row 3
-        DATA  01,  04,   59,   $FF,     00   'Row 4   Take Inspection Photo
-        DATA  01,  05,   00,   $FF,     00   'Row 5   5s Pump Pulse
-        DATA  01,  05,   01,   $FF,     00   'Row 6   Take photo to record Event Table State
-        DATA  01,  05,   02,   $FF,     00   'Row 7   Replay Take Replay Exit Photo
-        DATA  01,  05,   03,   $FF,     00   'Row 8   Take another photo to record Event Table state
-        DATA  05,  00,   00,   $FF,     00   'Row 9
-        DATA  06,  00,   00,   $FF,     00   'Row 10
-        DATA  07,  00,   00,   $FF,     00   'Row 11
-        DATA  08,  00,   00,   $FF,     00   'Row 12
-        DATA  09,  00,   00,   $FF,     00   'Row 13
-        DATA  10,  00,   00,   $FF,     00   'Row 14
-        DATA  11,  00,   00,   $FF,     00   'Row 15
-        DATA  12,  00,   00,   $FF,     00   'Row 16
-        DATA  13,  00,   00,   $FF,     00   'Row 17
-        DATA  14,  00,   00,   $FF,     00   'Row 18
-        DATA  15,  00,   00,   $FF,     00   'Row 19
-        DATA  16,  00,   00,   $FF,     00   'Row 20
-        DATA  17,  00,   00,   $FF,     00   'Row 21
-        DATA  18,  00,   00,   $FF,     00   'Row 22
-        DATA  19,  00,   00,   $FF,     00   'Row 23
-        DATA  20,  00,   00,   $FF,     00   'Row 24
-        DATA  21,  00,   00,   $FF,     00   'Row 25
-        DATA  22,  00,   00,   $FF,     00   'Row 26
-        DATA  23,  00,   00,   $FF,     00   'Row 27
-        DATA  24,  00,   00,   $FF,     00   'Row 28
-        DATA  25,  00,   00,   $FF,     00   'Row 29
-        DATA  26,  00,   00,   $FF,     00   'Row 30
-        DATA  27,  00,   00,   $FF,     00   'Row 31
-        DATA  28,  00,   00,   $FF,     00   'Row 32
-        DATA  29,  00,   00,   $FF,     00   'Row 33
-        DATA  30,  00,   00,   $FF,     00   'Row 34
-        DATA  31,  00,   00,   $FF,     00   'Row 35
-        DATA  32,  00,   00,   $FF,     00   'Row 36
-        DATA  33,  00,   00,   $FF,     00   'Row 37
-        DATA  34,  00,   00,   $FF,     00   'Row 38
-        DATA  35,  00,   00,   $FF,     00   'Row 39
-        DATA  36,  00,   00,   $FF,     00   'Row 40
+ ETable DATA  00,  06,   00,   $FF,     07   'Row 0
+        DATA  00,  07,   00,   $FF,     07   'Row 1
+        DATA  00,  08,   00,   $FF,     05   'Row 2
+        DATA  00,  08,   01,   $FF,     06   'Row 3
+        DATA  00,  09,   00,   $FF,     05   'Row 4
+        DATA  00,  09,   01,   $FF,     06   'Row 5
+        DATA  00,  10,   00,   $FF,     05   'Row 6
+        DATA  00,  10,   01,   $FF,     06   'Row 7
+        DATA  00,  11,   00,   $FF,     05   'Row 8
+        DATA  00,  11,   01,   $FF,     06   'Row 9
+        DATA  00,  12,   00,   $FF,     05   'Row 10
+        DATA  00,  12,   01,   $FF,     06   'Row 11
+        DATA  00,  13,   00,   $FF,     05   'Row 12
+        DATA  00,  13,   01,   $FF,     06   'Row 13
+        DATA  00,  14,   00,   $FF,     05   'Row 14
+        DATA  00,  14,   01,   $FF,     06   'Row 15
+        DATA  00,  15,   00,   $FF,     05   'Row 16
+        DATA  00,  15,   01,   $FF,     06   'Row 17
+        DATA  00,  16,   00,   $FF,     05   'Row 18
+        DATA  00,  16,   01,   $FF,     06   'Row 19
+        DATA  00,  17,   00,   $FF,     05   'Row 20
+        DATA  00,  17,   01,   $FF,     06   'Row 21
+        DATA  00,  18,   00,   $FF,     05   'Row 22
+        DATA  00,  18,   01,   $FF,     06   'Row 23
+        DATA  00,  19,   00,   $FF,     05   'Row 24
+        DATA  00,  19,   01,   $FF,     06   'Row 25
+        DATA  00,  20,   00,   $FF,     05   'Row 26
+        DATA  00,  20,   01,   $FF,     06   'Row 27
+        DATA  00,  21,   00,   $FF,     05   'Row 28
+        DATA  00,  21,   01,   $FF,     06   'Row 29
+        DATA  00,  22,   00,   $FF,     05   'Row 30
+        DATA  00,  22,   01,   $FF,     06   'Row 31
+        DATA  00,  23,   00,   $FF,     05   'Row 32
+        DATA  00,  23,   01,   $FF,     06   'Row 33
+        DATA  01,  00,   00,   $FF,     05   'Row 34
+        DATA  01,  00,   01,   $FF,     06   'Row 35
+        DATA  01,  01,   00,   $FF,     05   'Row 36
+        DATA  01,  01,   01,   $FF,     06   'Row 37
+        DATA  01,  02,   00,   $FF,     05   'Row 38
+        DATA  01,  02,   01,   $FF,     06   'Row 39
+        DATA  01,  03,   00,   $FF,     05   'Row 40
+        DATA  01,  03,   01,   $FF,     06   'Row 41
+        DATA  01,  04,   00,   $FF,     05   'Row 42
+        DATA  01,  04,   01,   $FF,     06   'Row 43
+        DATA  01,  05,   00,   $FF,     05   'Row 44
+        DATA  01,  05,   01,   $FF,     06   'Row 45
+        DATA  01,  06,   00,   $FF,     05   'Row 46
+        DATA  01,  06,   01,   $FF,     06   'Row 47
+        DATA  01,  07,   00,   $FF,     05   'Row 48
+        DATA  01,  07,   01,   $FF,     06   'Row 49
+        DATA  01,  08,   00,   $FF,     05   'Row 50
+        DATA  01,  08,   01,   $FF,     06   'Row 51
+        DATA  01,  09,   00,   $FF,     05   'Row 52
+        DATA  01,  09,   01,   $FF,     06   'Row 53
+        DATA  01,  10,   00,   $FF,     05   'Row 54
+        DATA  01,  10,   01,   $FF,     06   'Row 55
+        DATA  01,  11,   00,   $FF,     05   'Row 56
+        DATA  01,  11,   01,   $FF,     06   'Row 57
+        DATA  01,  12,   00,   $FF,     05   'Row 58
+        DATA  01,  12,   01,   $FF,     06   'Row 59
+        DATA  01,  12,   30,   $FF,     07   'Row 60
+        DATA  01,  12,   31,   $FF,     06   'Row 61
+        DATA  01,  13,   00,   $FF,     05   'Row 62
+        DATA  01,  13,   01,   $FF,     06   'Row 63
+        DATA  01,  14,   00,   $FF,     05   'Row 64
+        DATA  01,  14,   01,   $FF,     06   'Row 65
+        DATA  01,  15,   00,   $FF,     05   'Row 66
+        DATA  01,  15,   01,   $FF,     06   'Row 67
+        DATA  01,  16,   00,   $FF,     05   'Row 68
+        DATA  01,  16,   01,   $FF,     06   'Row 69
+        DATA  01,  17,   00,   $FF,     05   'Row 70
+        DATA  01,  17,   01,   $FF,     06   'Row 71
+        DATA  01,  18,   00,   $FF,     05   'Row 72
+        DATA  01,  18,   01,   $FF,     06   'Row 73
+        DATA  01,  19,   00,   $FF,     05   'Row 74
+        DATA  01,  19,   01,   $FF,     06   'Row 75
+ DATA  01,  20,   00,   $FF,     05   'Row 76
+        DATA  01,  20,   01,   $FF,     06   'Row 77
+        DATA  01,  21,   00,   $FF,     05   'Row 78
+        DATA  01,  21,   01,   $FF,     06   'Row 79
+        DATA  01,  22,   00,   $FF,     05   'Row 80
+        DATA  01,  22,   01,   $FF,     06   'Row 81
+        DATA  01,  23,   00,   $FF,     05   'Row 82
+        DATA  01,  23,   01,   $FF,     06   'Row 83
+        DATA  02,  00,   00,   $FF,     05   'Row 84
+        DATA  02,  00,   01,   $FF,     06   'Row 85
+        DATA  02,  01,   00,   $FF,     05   'Row 86
+        DATA  02,  01,   01,   $FF,     06   'Row 87
+        DATA  02,  02,   00,   $FF,     05   'Row 88
+        DATA  02,  02,   01,   $FF,     06   'Row 89
+        DATA  02,  03,   00,   $FF,     05   'Row 90
+        DATA  02,  03,   01,   $FF,     06   'Row 91
+        DATA  02,  04,   00,   $FF,     05   'Row 92
+        DATA  02,  04,   01,   $FF,     06   'Row 93
+        DATA  02,  05,   00,   $FF,     05   'Row 94
+        DATA  02,  05,   01,   $FF,     06   'Row 95
+        DATA  02,  06,   00,   $FF,     05   'Row 96
+        DATA  02,  06,   01,   $FF,     06   'Row 97
+        DATA  02,  07,   00,   $FF,     05   'Row 98
+        DATA  02,  07,   01,   $FF,     06   'Row 99
+        DATA  02,  08,   00,   $FF,     05   'Row 100
+        DATA  02,  08,   01,   $FF,     06   'Row 101
+        DATA  02,  09,   00,   $FF,     05   'Row 102
+        DATA  02,  09,   01,   $FF,     06   'Row 103
+        DATA  02,  10,   00,   $FF,     05   'Row 104
+        DATA  02,  10,   01,   $FF,     06   'Row 105
+        DATA  02,  11,   00,   $FF,     05   'Row 106
+        DATA  02,  11,   01,   $FF,     06   'Row 107
+        DATA  02,  12,   00,   $FF,     05   'Row 108
+        DATA  02,  12,   01,   $FF,     06   'Row 109
+        DATA  02,  12,   30,   $FF,     07   'Row 110
+        DATA  02,  12,   31,   $FF,     06   'Row 111
+        DATA  02,  13,   00,   $FF,     05   'Row 112
+        DATA  02,  13,   01,   $FF,     06   'Row 113
+        DATA  02,  14,   00,   $FF,     05   'Row 114
+        DATA  02,  14,   01,   $FF,     06   'Row 115
+        DATA  02,  15,   00,   $FF,     05   'Row 116
+        DATA  02,  15,   01,   $FF,     06   'Row 117
+        DATA  02,  16,   00,   $FF,     05   'Row 118
+        DATA  02,  16,   01,   $FF,     06   'Row 119
+        DATA  02,  17,   00,   $FF,     05   'Row 120
+        DATA  02,  17,   01,   $FF,     06   'Row 121
+        DATA  02,  18,   00,   $FF,     05   'Row 122
+        DATA  02,  18,   01,   $FF,     06   'Row 123
+        DATA  02,  19,   00,   $FF,     05   'Row 124
+        DATA  02,  19,   01,   $FF,     06   'Row 125
+        DATA  02,  20,   00,   $FF,     05   'Row 126
+        DATA  02,  20,   01,   $FF,     06   'Row 127
+        DATA  02,  21,   00,   $FF,     05   'Row 128
+        DATA  02,  21,   01,   $FF,     06   'Row 129
+        DATA  02,  22,   00,   $FF,     05   'Row 130
+        DATA  02,  22,   01,   $FF,     06   'Row 131
+        DATA  02,  23,   00,   $FF,     05   'Row 132
+        DATA  02,  23,   01,   $FF,     06   'Row 133
+
+
 
 PumpIter DATA   36  '3 minute
