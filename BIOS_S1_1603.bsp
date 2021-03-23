@@ -19,7 +19,7 @@ version   CON    1603
 '     Conditional Assemblies
 '
 #DEFINE FlyConfig = 1              '1=Set to Flight Configuration, 0=Test Configuration
-#DEFINE fastclock = 2              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
+#DEFINE fastclock = 0              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
 #DEFINE testreset = 1              '1=test reset and reset count
 #DEFINE SaySlot   = 1              '1=Say Slot with vector
 #DEFINE Sayit = 1                  '1=Say what is happening
@@ -357,16 +357,16 @@ ReturnBack:
 PayloadTest:  'Payload test procedures and flight preparation utilities (priming, etc)
   PayloadOptionsText:
   DEBUG CR
-  DEBUG "IO0 On  = 0",CR
-  DEBUG "IO1 On  = 1",CR
+  DEBUG "Pump On  = 0",CR
+  DEBUG "Light On  = 1",CR
   DEBUG "IO2 On  = 2",CR
   DEBUG "IO3 On  = 5",CR
   DEBUG "IO4 On  = 4",CR
   DEBUG "IO5 On  = 5", CR
   DEBUG "IO6 On  = 6",CR
   DEBUG "IO7 On  = 7",CR
-  DEBUG "All IO On = 8",CR
-  DEBUG "All IO Pins Off = 9",CR
+  DEBUG "Turn everything off (all pins are high) = 8",CR
+  DEBUG "Turn everything on (lights and pump should run) = 9",CR
   DEBUG "Toggle C9 = c",CR
   DEBUG "Toggle D8 = d",CR
   DEBUG "Toggle P14 = x",CR
@@ -420,36 +420,36 @@ inputtimeout:
     GOTO GotoSlot                  'go to McMek command interpreter ----
 
 PayloadTestP0:
-     DEBUG CR,"IO0 On",CR
-     I2COUT internI2C, PCF8574address, [%00000001]    'IO0 On
+     DEBUG CR,"Pump On",CR
+     I2COUT internI2C, PCF8574address, [%00111111] 'GOES BACKWARDS!!! Each digit represents a pin being on or off
      GOTO PayloadOptionsText
 PayloadTestP1:
-     DEBUG CR,"IO1 On",CR
-     I2COUT internI2C, PCF8574address, [%00000010]    'IO1 On
+     DEBUG CR,"Light On",CR
+      I2COUT internI2C, PCF8574address, [%11011111]
      GOTO PayloadOptionsText
 PayloadTestP2:
      DEBUG CR,"IO2 On",CR
-     I2COUT internI2C, PCF8574address, [%00000100]    'IO2 On
+     I2COUT internI2C, PCF8574address, [%11111011]    'IO2 On
      GOTO PayloadOptionsText
 PayloadTestP3:
      DEBUG CR,"IO3 On",CR
-     I2COUT internI2C, PCF8574address, [%00001000]    'IO3 On
+     I2COUT internI2C, PCF8574address, [%11111111]    'IO3 On
      GOTO PayloadOptionsText
 PayloadTestP4:
      DEBUG CR,"IO4 On",CR
-     I2COUT internI2C, PCF8574address, [%00010000]    'IO4 On
+     I2COUT internI2C, PCF8574address, [%11111101]    'IO4 On
      GOTO PayloadOptionsText
 PayloadTestP5:
      DEBUG CR,"IO5 On",CR
-     I2COUT internI2C, PCF8574address, [%00100000]    'IO5 On
+     I2COUT internI2C, PCF8574address, [%11011111]    'IO5 On
      GOTO PayloadOptionsText
 PayloadTestP6:
      DEBUG CR,"IO6 On",CR
-     I2COUT internI2C, PCF8574address, [%01000000]    'IO6 On
+     I2COUT internI2C, PCF8574address, [%11111101]    'IO6 On
      GOTO PayloadOptionsText
 PayloadTestP7:
      DEBUG CR,"IO7 On",CR
-     I2COUT internI2C, PCF8574address, [%10000000]    'IO7 On
+     I2COUT internI2C, PCF8574address, [%11111101]    'IO7 On
      GOTO PayloadOptionsText
 PayloadTestP8:
      DEBUG CR,"IO8 On",CR
