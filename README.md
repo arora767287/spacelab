@@ -1,3 +1,3 @@
 # spacelab
 
-Most of the edited code is in slot 2. Thanks to Alan Chang for his advice.
+A lot of the code was inherited from experiments from previous years (thanks Alan Chang). Most of the edited code is in slot 2.
