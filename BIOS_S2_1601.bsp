@@ -519,19 +519,18 @@ P3vector:
   GOTO ReturnBack 'back to calling routine
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  12,   01,   $FF,     02   'Pump on
-        DATA  00,  12,   03,   $FF,     04   'Pump off
-        DATA  00,  12,   03,   $FF,     01   'Pump off
-        DATA  00,  12,   33,   $FF,     07   'Take picture
-        DATA  01,  13,   32,   $FF,     02   'Take picture
-        DATA  01,  14,   32,   $FF,     04   'Take picture
-        DATA  01,  15,   32,   $FF,     03   'Take picture
-        DATA  01,  16,   32,   $FF,     04   'Take picture
-        DATA  01,  17,   32,   $FF,     07   'Take picture
-        DATA  01,  17,   33,   $FF,     03   'Loop Back
-        DATA  01,  17,   33,   $FF,     04   'Loop Back
-        DATA  00,  12,   03,   $FF,     01   'Pump off
-        DATA  01,  17,   33,   $FF,     05   'Loop Back
+ ETable DATA  00,  12,   01,   $FF,     02   'Pump 1 on
+        DATA  00,  12,   03,   $FF,     04   'Pump 1 off
+        DATA  00,  12,   33,   $FF,     07   'Vibrator On
+        DATA  01,  13,   32,   $FF,     02   'Pump 1 on
+        DATA  01,  14,   32,   $FF,     04   'Pump 1 off
+        DATA  01,  15,   32,   $FF,     03   'Pump 2 on
+        DATA  01,  16,   32,   $FF,     04   'Pump 2 off
+        DATA  01,  17,   32,   $FF,     07   'Vibrator
+        DATA  01,  17,   33,   $FF,     03   'Pump 2 on
+        DATA  01,  17,   33,   $FF,     04   'Pump 2 off
+        DATA  00,  12,   03,   $FF,     01   'Take Photo
+        DATA  01,  17,   33,   $FF,     05   'Camera Loop
 
 LoopIter1 DATA 255
 
