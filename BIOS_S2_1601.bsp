@@ -1,6 +1,6 @@
 ' {$STAMP BS2p}
 ' {$PBASIC 2.5}
-' {$PORT COM3}
+' {$PORT COM7}
 '**************************************************
 '
 '  Program Slot 2 = Event Table and Event programs
@@ -18,7 +18,7 @@ version   CON    1601
 '******************  Start of System Global lables *******************
 '     Conditional Assemblies
 '
-#DEFINE FlyConfig = 1              '1=Set to Flight Configuration, 0=Test Configuration
+#DEFINE FlyConfig = 0              '1=Set to Flight Configuration, 0=Test Configuration
 #DEFINE fastclock = 0              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
 #DEFINE testreset = 1              '1=test reset and reset count
 #DEFINE SaySlot   = 1              '1=Say Slot with vector
@@ -73,7 +73,7 @@ SlotErrReturn  CON VectorFromNum+1    'Error code return from Slot program run
 sMissionday     CON SlotErrReturn+1     'BIOS Mission clock day count here 0-xx
 sMissionhour    CON sMissionday+1       'BIOS Mission clock hour count here 0-23
 sMissionmin     CON sMissionhour+1      'BIOS Mission clock min count here 0-59
-sMissionsec     CON sMissionmin+1      'BIOS Mission clock sec count here 0-59
+sMissionsec     CON sMissionmin+1       'BIOS Mission clock sec count here 0-59
 '
 '---------- Bios provided data for user -----------------------------------------
 '
@@ -100,7 +100,7 @@ A2Dchannel3high    CON  A2Dchannel3+1         'BIOS Analog channel 3, (2 bits 0f
 InternTemp         CON  A2Dchannel3high+1     'Bios internal temp of msp430- Needs Calibration
 InternTemphigh     CON  InternTemp+1          'Bios internal temp of msp430- Needs Calibration
 VCCby2             CON  InternTemphigh+1      'Bios VCC/2 for calabration - Regulator check
-VCCBY2high         CON  VCCby2+1              'Bios VCC/2 for calabration - Regulator check
+VCCby2high         CON  VCCby2+1              'Bios VCC/2 for calabration - Regulator check
 '
 '----------- Bios Reserved working registers ----------------------------------------
 '
@@ -396,7 +396,7 @@ FoundEvent:
   STORE DataStorage ' return storage pointer to Slot 4
   DEBUG CR, "Dump Etable FOR DEBUG "
   STORE 2
-  FOR TempReg0 = 0 TO 20
+  FOR TempReg0 = 0 TO 12
     DEBUG CR,"Event Table Row ",DEC TempReg0,":  "
     READ ETable+(TempReg0*5)+0,TempReg1 : DEBUG DEC TempReg1,"  "
     READ ETable+(TempReg0*5)+1,TempReg1 : DEBUG DEC TempReg1,"  "
@@ -407,24 +407,25 @@ FoundEvent:
   DEBUG CR,"End of Table",CR
 
   STORE DataStorage
-  BRANCH UserVar3,[Event0,'Event 0
-  Event1,                     'Take Photo event 1
+  BRANCH UserVar3,[Event0,    'Event 0
+  Event1,                     'Event 1
   Event2,                     'Event 2
   Event3,                     'Event 3
-  Event4,                     'Event 4
-  Reset,                      'Event 5
-  PumpOn]                      'Event 6
-
+  Event4,
+  Event5,
+  Event6,
+  Event7]                     'Event 4
 
   UserVar3 = 0                 'Error
-  DEBUG CR,"Event Byte is o ut of range",CR
+  DEBUG CR,"Event Byte is out of range",CR
   GOTO ReturnBack              'back to calling routine
 
 Event0: DEBUG CR,"REB0",CR
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
+
 Event1: DEBUG CR,"REB1: TakePhoto",CR
-         I2COUT InternI2c, PCF8574address,[%11011111] 'IO5 high, all others off to switch the light on
+         I2COUT InternI2c, PCF8574address,[%11111110] 'IO5 high, all others off
          '
          '   Take a High Resoluation Photo of the Chamber
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
@@ -436,8 +437,6 @@ Event1: DEBUG CR,"REB1: TakePhoto",CR
          TempReg1 = 1    'Destination Index
          TempReg3 = 6    'Destination Slot
          RUN 6           'Execute a slot goto proceedure now doit
-
-
 TakePhotoReturn:
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
          '
@@ -446,12 +445,17 @@ TakePhotoReturn:
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
 
-Event2: DEBUG CR,"REB2: Pumps On" ,CR
-        I2COUT InternI2c, PCF8574address,[%10101111]     'IO4 and IO6 high, all others off
+Event2: DEBUG CR,"REB2: Pumps 1 On" ,CR
+        I2COUT InternI2c, PCF8574address,[%11110011]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
-Event3: DEBUG CR,"REB3: Pumps Off"  ,CR
+Event3: DEBUG CR,"REB2: Pumps 2 On" ,CR
+        I2COUT InternI2c, PCF8574address,[%00111111]     'IO0 and IO1 high, all others off
+        tempReg0 = 4 'Destination Index (EventTableReturn)
+        RUN 0        'Destination Slot
+
+Event4: DEBUG CR,"REB3: Pumps Off"  ,CR
         I2COUT InternI2c, PCF8574address,[%11111111]     'All IO pins off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
@@ -460,7 +464,7 @@ DmpOut: STORE DataStorage
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
-Event4: DEBUG CR,"REB4: Camera Loop" ,CR
+Event5: DEBUG CR,"REB4: Camera Loop" ,CR
         STORE 2
         READ LoopIter1,TempReg0
         TempReg0 = TempReg0-1            'decrement LoopIter1
@@ -474,21 +478,24 @@ Event4: DEBUG CR,"REB4: Camera Loop" ,CR
         ENDIF
 
         STORE 0
-        WRITE DurDay,0 : WRITE DurHour,11 : WRITE DurMin,59 'Reset Event Table State
+        WRITE DurDay,1 : WRITE DurHour,12 : WRITE DurMin,31 'Reset Event Table State
         STORE 2
-        FOR TempReg0 = 0 TO 15
+        FOR TempReg0 = 2 TO 8
           WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
         NEXT
         GOTO DmpOut
 
-Reset:
-      DEBUG "Light and pump turning off"
-      I2COUT internI2C, PCF8574address, [%11111111]    'All IO On (everything turns off)
-      RUN 0
-PumpOn:
-      DEBUG "Pump turning on"
-      I2COUT internI2C, PCF8574address, [%00111111] 'GOES BACKWARDS!!! Each digit represents a pin being on or off
-      RUN 0
+Event6: DEBUG CR,"REB5: UV LED", CR
+         I2COUT InternI2c, PCF8574address,[%11111101]     'All IO pins off
+         ' Values in return back are lost when jumping to Slot 6
+         tempReg0 = 4 'Destination Index (EventTableReturn)
+         RUN 0        'Destination Slot
+
+Event7: DEBUG CR,"REB5: Pump 3", CR
+         I2COUT InternI2c, PCF8574address,[%11001111]     'All IO pins off
+         ' Values in return back are lost when jumping to Slot 6
+         tempReg0 = 4 'Destination Index (EventTableReturn)
+         RUN 0        'Destination Slot
 
 
   '
@@ -512,21 +519,19 @@ P3vector:
   GOTO ReturnBack 'back to calling routine
 
          '    Day  Hour  Min   Tag  EventByte
-ETable  DATA  00,  12,   01,   $FF,     01  'Take picture
-        DATA  00,  12,   03,   $FF,     06   'Pump on
-        DATA  00,  12,   33,   $FF,     05   'Pump off
-        DATA  00,  12,   33,   $FF,     01   'Take picture
-        DATA  00,  13,   33,   $FF,     01   'Take picture
-        DATA  00,  14,   33,   $FF,     01   'Take picture
-        DATA  00,  15,   33,   $FF,     01   'Take picture
-        DATA  00,  16,   33,   $FF,     01   'Take picture
-        DATA  00,  17,   33,   $FF,     01   'Take picture
-        DATA  00,  18,   33,   $FF,     01   'Take picture
-        DATA  00,  19,   33,   $FF,     01   'Take picture
-        DATA  00,  20,   33,   $FF,     01   'Take picture
-        DATA  00,  21,   33,   $FF,     01   'Take picture
-        DATA  00,  22,   33,   $FF,     01   'Take picture
-        DATA  00,  23,   33,   $FF,     01   'Take picture
-        DATA  00,  23,   34,   $FF,     04   'Loop Back
+ ETable DATA  00,  12,   01,   $FF,     02   'Pump on
+        DATA  00,  12,   03,   $FF,     04   'Pump off
+        DATA  00,  12,   03,   $FF,     01   'Pump off
+        DATA  00,  12,   33,   $FF,     07   'Take picture
+        DATA  01,  13,   32,   $FF,     02   'Take picture
+        DATA  01,  14,   32,   $FF,     04   'Take picture
+        DATA  01,  15,   32,   $FF,     03   'Take picture
+        DATA  01,  16,   32,   $FF,     04   'Take picture
+        DATA  01,  17,   32,   $FF,     07   'Take picture
+        DATA  01,  17,   33,   $FF,     03   'Loop Back
+        DATA  01,  17,   33,   $FF,     04   'Loop Back
+        DATA  00,  12,   03,   $FF,     01   'Pump off
+        DATA  01,  17,   33,   $FF,     05   'Loop Back
 
 LoopIter1 DATA 255
+
