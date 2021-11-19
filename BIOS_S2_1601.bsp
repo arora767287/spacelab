@@ -414,7 +414,8 @@ FoundEvent:
   Event4,
   Event5,
   Event6,
-  Event7]                     'Event 4
+  Event7,
+  Event8]                     'Event 4
 
   UserVar3 = 0                 'Error
   DEBUG CR,"Event Byte is out of range",CR
@@ -463,12 +464,11 @@ Event4: DEBUG CR,"REB3: Pumps Off"  ,CR
 DmpOut: STORE DataStorage
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
-
-Event5: DEBUG CR,"REB4: Camera Loop" ,CR
+Event5: DEBUG CR,"REB4: Pump 1 Loop" ,CR
         STORE 2
         READ LoopIter1,TempReg0
         TempReg0 = TempReg0-1            'decrement LoopIter1
-        DEBUG "Camera Iteration ",DEC TempReg0,CR,CR
+        DEBUG "Pump1 Iteration ",DEC TempReg0,CR,CR
         WRITE LoopIter1,TempReg0          'store LoopIter1
 
         IF TempReg0 < 1 THEN
@@ -497,6 +497,26 @@ Event7: DEBUG CR,"REB5: Pump 3", CR
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
 
+Event8: DEBUG CR,"REB4: Pump 2 Loop" ,CR
+        STORE 2
+        READ LoopIter1,TempReg0
+        TempReg0 = TempReg0-1            'decrement LoopIter1
+        DEBUG "Pump2 Iteration ",DEC TempReg0,CR,CR
+        WRITE LoopIter1,TempReg0          'store LoopIter1
+
+        IF TempReg0 < 1 THEN
+           DEBUG "LoopIter1 value = ", DEC tempreg0," exiting replay",CR,CR
+           WRITE LoopIter1,255 'restore value
+           GOTO DmpOut 'timed out
+        ENDIF
+
+        STORE 0
+        WRITE DurDay,00 : WRITE DurHour,00 : WRITE DurMin,03 'Reset Event Table State
+        STORE 2
+        FOR TempReg0 = 2 TO 8
+          WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
+        NEXT
+        GOTO DmpOut
 
   '
   '======================================================================
@@ -519,18 +539,20 @@ P3vector:
   GOTO ReturnBack 'back to calling routine
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  12,   01,   $FF,     02   'Pump 1 on
-        DATA  00,  12,   03,   $FF,     04   'Pump 1 off
-        DATA  00,  12,   33,   $FF,     07   'Vibrator On
-        DATA  01,  13,   32,   $FF,     02   'Pump 1 on
-        DATA  01,  14,   32,   $FF,     04   'Pump 1 off
-        DATA  01,  15,   32,   $FF,     03   'Pump 2 on
-        DATA  01,  16,   32,   $FF,     04   'Pump 2 off
-        DATA  01,  17,   32,   $FF,     07   'Vibrator
-        DATA  01,  17,   33,   $FF,     03   'Pump 2 on
-        DATA  01,  17,   33,   $FF,     04   'Pump 2 off
-        DATA  00,  12,   03,   $FF,     01   'Take Photo
-        DATA  01,  17,   33,   $FF,     05   'Camera Loop
+ ETable DATA  00,  00,   01,   $FF,     02   'Pump 1 on
+        DATA  00,  00,   02,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   03,   $FF,     07   'Vibrator On
+        DATA  00,  00,   18,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   19,   $FF,     04   'Pump 1 off
+        DATA  00,  11,   59,   $FF,     01   'Take Photo. Takes photo at the end of the day
+        DATA  00,  12,   00,   $FF,     05   'Pump 1 Loop
+        DATA  00,  12,   01,   $FF,     03   'Pump 2 on
+        DATA  00,  12,   02,   $FF,     04   'Pump 2 off
+        DATA  00,  12,   03,   $FF,     07   'Vibrator
+        DATA  00,  12,   18,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  12,   19,   $FF,     04   'Pump 2 off
+        DATA  00,  12,   20,   $FF,     01   'Take Photo. Takes photo at the end of the day
+        DATA  01,  00,   00,   $FF,     08   'Pump 2 Loop
 
 LoopIter1 DATA 255
 
