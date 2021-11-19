@@ -447,12 +447,12 @@ TakePhotoReturn:
          RUN 0        'Destination Slot
 
 Event2: DEBUG CR,"REB2: Pumps 1 On" ,CR
-        I2COUT InternI2c, PCF8574address,[%11110011]     'IO0 and IO1 high, all others off
+        I2COUT InternI2c, PCF8574address,[%11110111]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
 Event3: DEBUG CR,"REB2: Pumps 2 On" ,CR
-        I2COUT InternI2c, PCF8574address,[%00111111]     'IO0 and IO1 high, all others off
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
@@ -489,7 +489,8 @@ Event6: DEBUG CR,"REB5: UV LED", CR
          I2COUT InternI2c, PCF8574address,[%11111101]     'All IO pins off
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
-         RUN 0        'Destination Slot
+         'RUN 0        'Destination Slot
+         GOTO DmpOut
 
 Event7: DEBUG CR,"REB5: Pump 3", CR
          I2COUT InternI2c, PCF8574address,[%11001111]     'All IO pins off
@@ -544,15 +545,78 @@ P3vector:
         DATA  00,  00,   03,   $FF,     07   'Vibrator On
         DATA  00,  00,   18,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
         DATA  00,  00,   19,   $FF,     04   'Pump 1 off
-        DATA  00,  11,   59,   $FF,     01   'Take Photo. Takes photo at the end of the day
-        DATA  00,  12,   00,   $FF,     05   'Pump 1 Loop
-        DATA  00,  12,   01,   $FF,     03   'Pump 2 on
-        DATA  00,  12,   02,   $FF,     04   'Pump 2 off
-        DATA  00,  12,   03,   $FF,     07   'Vibrator
-        DATA  00,  12,   18,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
-        DATA  00,  12,   19,   $FF,     04   'Pump 2 off
-        DATA  00,  12,   20,   $FF,     01   'Take Photo. Takes photo at the end of the day
-        DATA  01,  00,   00,   $FF,     08   'Pump 2 Loop
+        DATA  00,  00,   20,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   21,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   22,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   23,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   24,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   25,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   26,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   27,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   28,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   29,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   30,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   31,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   32,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   33,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   34,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   35,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   36,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   37,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   38,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   39,   $FF,     04   'Pump 1 off        
+        DATA  00,  00,   40,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   41,   $FF,     04   'Pump 1 off         
+        DATA  00,  00,   42,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   43,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   44,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   45,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   46,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   47,   $FF,     04   'Pump 1 off
+        DATA  00,  00,   48,   $FF,     02   'Pump 1 on.   Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   49,   $FF,     04   'Pump 1 off
+        
+        'DATA  00,  11,   59,   $FF,     01   'Take Photo. Takes photo at the end of the day
+        
+        DATA  00,  00,   50,   $FF,     05   'Pump 1 Loop
+        DATA  00,  00,   51,   $FF,     03   'Pump 2 on
+        DATA  00,  00,   52,   $FF,     04   'Pump 2 off
+        DATA  00,  00,   53,   $FF,     07   'Vibrator
+        DATA  00,  00,   54,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   55,   $FF,     04   'Pump 2 off
+        DATA  00,  00,   56,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   57,   $FF,     04   'Pump 2 off
+        DATA  00,  00,   58,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  00,   59,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   00,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   01,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   02,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   03,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   04,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   05,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   06,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   07,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   08,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   09,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   10,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   11,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   12,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   13,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   14,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   15,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   16,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   17,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   18,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   19,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   20,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   21,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   22,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   23,   $FF,     04   'Pump 2 off
+        DATA  00,  01,   24,   $FF,     03   'Pump 2 on.  Repeat this cycle until the fluidic bags are empty
+        DATA  00,  01,   25,   $FF,     04   'Pump 2 off
+        'DATA  00,  01,   20,   $FF,     01   'Take Photo. Takes photo at the end of the day
+        'DATA  01,  00,   00,   $FF,     08   'Pump 2 Loop
+        DATA  00,  01,   30,   $FF,     06   'Pump 2 off
 
 LoopIter1 DATA 255
 
