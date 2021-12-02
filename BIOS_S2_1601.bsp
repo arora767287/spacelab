@@ -472,28 +472,6 @@ Event4: DEBUG CR,"REB3: Pumps Off"  ,CR
 DmpOut: STORE DataStorage
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
-Event5: DEBUG CR,"REB4: Pump 1 Loop" ,CR
-        STORE 2
-        READ LoopIter1,TempReg0
-        TempReg0 = TempReg0-1            'decrement LoopIter1
-        UserVar0 = UserVar0 - 1
-        DEBUG "UserVar0 =  ",DEC UserVar0,CR,CR
-        WRITE LoopIter1,TempReg0          'store LoopIter1
-
-        IF UserVar0 = 0 THEN
-           DEBUG "User value = ", DEC UserVar0, "Next", CR, CR
-           WRITE UserVar0, 20
-           RUN 0
-        ENDIF
-
-        STORE 0
-        WRITE DurDay,00 : WRITE DurHour,00 : WRITE DurMin,04 'Reset Event Table State
-        STORE 2
-        FOR TempReg0 = 0 TO 6
-          WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
-        NEXT
-        GOTO DmpOut
-
 Event6: DEBUG CR,"REB5: UV LED", CR
          UserVar0 DATA 10
          UserVar1 DATA 05
