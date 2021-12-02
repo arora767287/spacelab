@@ -414,7 +414,8 @@ FoundEvent:
   Event4,
   Event5,
   Event6,
-  Event7]                     'Event 4
+  Event7,
+  Event8]                     'Event 4
 
   UserVar3 = 0                 'Error
   DEBUG CR,"Event Byte is out of range",CR
@@ -446,12 +447,20 @@ TakePhotoReturn:
          RUN 0        'Destination Slot
 
 Event2: DEBUG CR,"REB2: Pumps 1 On" ,CR
-        I2COUT InternI2c, PCF8574address,[%11110011]     'IO0 and IO1 high, all others off
+        UserVar0 DATA 14
+        UserVar1 DATA 01 'Day variable
+        UserVar2 DATA 01 'Hour variable
+        UserVar3 DATA 21 'Minute variable
+        I2COUT InternI2c, PCF8574address,[%11110111]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
 Event3: DEBUG CR,"REB2: Pumps 2 On" ,CR
-        I2COUT InternI2c, PCF8574address,[%00111111]     'IO0 and IO1 high, all others off
+        UserVar0 DATA 3
+        UserVar1 DATA 1
+        UserVar2 DATA 3
+        UserVar3 DATA 25
+        I2COUT InternI2c, PCF8574address,[%01111111]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
@@ -463,33 +472,38 @@ Event4: DEBUG CR,"REB3: Pumps Off"  ,CR
 DmpOut: STORE DataStorage
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
-
-Event5: DEBUG CR,"REB4: Camera Loop" ,CR
+Event5: DEBUG CR,"REB4: Pump 1 Loop" ,CR
         STORE 2
         READ LoopIter1,TempReg0
         TempReg0 = TempReg0-1            'decrement LoopIter1
-        DEBUG "Camera Iteration ",DEC TempReg0,CR,CR
+        UserVar0 = UserVar0 - 1
+        DEBUG "UserVar0 =  ",DEC UserVar0,CR,CR
         WRITE LoopIter1,TempReg0          'store LoopIter1
 
-        IF TempReg0 < 1 THEN
-           DEBUG "LoopIter1 value = ", DEC tempreg0," exiting replay",CR,CR
-           WRITE LoopIter1,255 'restore value
-           GOTO DmpOut 'timed out
+        IF UserVar0 = 0 THEN
+           DEBUG "User value = ", DEC UserVar0, "Next", CR, CR
+           WRITE UserVar0, 20
+           RUN 0
         ENDIF
 
         STORE 0
-        WRITE DurDay,1 : WRITE DurHour,12 : WRITE DurMin,31 'Reset Event Table State
+        WRITE DurDay,00 : WRITE DurHour,00 : WRITE DurMin,04 'Reset Event Table State
         STORE 2
-        FOR TempReg0 = 2 TO 8
+        FOR TempReg0 = 0 TO 6
           WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
         NEXT
         GOTO DmpOut
 
 Event6: DEBUG CR,"REB5: UV LED", CR
+         UserVar0 DATA 10
+         UserVar1 DATA 05
+         UserVar2 DATA 03
+         UserVar3 DATA 26
          I2COUT InternI2c, PCF8574address,[%11111101]     'All IO pins off
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
+         GOTO DmpOut
 
 Event7: DEBUG CR,"REB5: Pump 3", CR
          I2COUT InternI2c, PCF8574address,[%11001111]     'All IO pins off
@@ -497,13 +511,35 @@ Event7: DEBUG CR,"REB5: Pump 3", CR
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
 
+Event8: DEBUG CR,"Photo Loop" ,CR
+        STORE 2
+        READ UserVar0,LoopIter1,TempReg0
+        TempReg0 = TempReg0-1            'decrement LoopIter1
+        UserVar0 = UserVar0 - 1
+        DEBUG "Pump1 Iteration ",DEC TempReg0,CR,CR
+        WRITE LoopIter1,TempReg0          'store LoopIter1
+        
+        IF UserVar0 = 1 THEN
+           DEBUG "UserVar0 = ", DEC UserVar0," exiting replay",CR,CR
+           'WRITE LoopIter1,255 restore value, no need to restore value
+           RUN 0
+           'GOTO DmpOut , comment timed out
+        ENDIF
+
+        STORE 0
+        WRITE DurDay,UserVar1 : WRITE DurHour,UserVar2 : WRITE DurMin,UserVar3 'Reset Event Table State
+        STORE 2
+        FOR TempReg0 = 2 TO 8
+          WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
+        NEXT
+        GOTO DmpOut
 
   '
   '======================================================================
 P1vector:
         '
         '
-  GOTO ReturnBack      'back to calling routine
+  GOTO ReturnBack      'back to calling routine                      /
 
   '
     '======================================================================
@@ -519,18 +555,17 @@ P3vector:
   GOTO ReturnBack 'back to calling routine
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  12,   01,   $FF,     02   'Pump 1 on
-        DATA  00,  12,   03,   $FF,     04   'Pump 1 off
-        DATA  00,  12,   33,   $FF,     07   'Vibrator On
-        DATA  01,  13,   32,   $FF,     02   'Pump 1 on
-        DATA  01,  14,   32,   $FF,     04   'Pump 1 off
-        DATA  01,  15,   32,   $FF,     03   'Pump 2 on
-        DATA  01,  16,   32,   $FF,     04   'Pump 2 off
-        DATA  01,  17,   32,   $FF,     07   'Vibrator
-        DATA  01,  17,   33,   $FF,     03   'Pump 2 on
-        DATA  01,  17,   33,   $FF,     04   'Pump 2 off
-        DATA  00,  12,   03,   $FF,     01   'Take Photo
-        DATA  01,  17,   33,   $FF,     05   'Camera Loop
-
+ ETable DATA  00,  00,   04,   $FF,     02   'Pump 1 on.   When pump 1 on, store 14 in UserVar0
+        DATA  00,  01,   05,   $FF,     04   'Pump 1 off, 
+        DATA  00,  01,   20,   $FF,     07   'Vibrator On
+        DATA  00,  01,   21,   $FF,     01   'Take Photo
+        DATA  01,  01,   21,   $FF,     08   'Photo Loop for 14 days
+        DATA  01,  02,   22,   $FF,     03   'Pump 2 on,   When pump 2 on, store 3 in UserVar0
+        DATA  01,  03,   23,   $FF,     04   'Pumps off
+        DATA  01,  03,   24,   $FF,     07   'Vibrator On
+        DATA  01,  03,   25,   $FF,     01   'Take Photo
+        DATA  02,  03,   25,   $FF,     08   'Photo Loop for 3 days
+        DATA  05,  03,   25,   $FF,     06   'UV LED On, when UV LED On, store remaining number of days in UserVar0
+        DATA  05,  03,   26,   $FF,     01   'Take Photo
+        DATA  06,  03,   26,   $FF,     08   'Photo Loop for the rest of the time
 LoopIter1 DATA 255
-
