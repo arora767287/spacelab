@@ -447,19 +447,15 @@ TakePhotoReturn:
          RUN 0        'Destination Slot
 
 Event2: DEBUG CR,"REB2: Pumps 1 On" ,CR
-        UserVar0 DATA 14
-        UserVar1 DATA 01 'Day variable
-        UserVar2 DATA 01 'Hour variable
-        UserVar3 DATA 21 'Minute variable
+        UserVar4 = 14
+        UserVar5 = 1582
         I2COUT InternI2c, PCF8574address,[%11110111]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
 Event3: DEBUG CR,"REB2: Pumps 2 On" ,CR
-        UserVar0 DATA 3
-        UserVar1 DATA 1
-        UserVar2 DATA 3
-        UserVar3 DATA 25
+        UserVar4 = 3
+        UserVar5 = 7405
         I2COUT InternI2c, PCF8574address,[%01111111]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
@@ -473,10 +469,8 @@ DmpOut: STORE DataStorage
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 Event6: DEBUG CR,"REB5: UV LED", CR
-         UserVar0 DATA 10
-         UserVar1 DATA 05
-         UserVar2 DATA 03
-         UserVar3 DATA 26
+         UserVar4 = 10
+         UserVar5 = 8847
          I2COUT InternI2c, PCF8574address,[%11111101]     'All IO pins off
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
@@ -491,21 +485,21 @@ Event7: DEBUG CR,"REB5: Pump 3", CR
 
 Event8: DEBUG CR,"Photo Loop" ,CR
         STORE 2
-        READ UserVar0,LoopIter1,TempReg0
+        READ UserVar4,LoopIter1,TempReg0
         TempReg0 = TempReg0-1            'decrement LoopIter1
-        UserVar0 = UserVar0 - 1
+        UserVar4 = UserVar4 - 1
         DEBUG "Pump1 Iteration ",DEC TempReg0,CR,CR
         WRITE LoopIter1,TempReg0          'store LoopIter1
         
         IF UserVar0 = 1 THEN
-           DEBUG "UserVar0 = ", DEC UserVar0," exiting replay",CR,CR
+           DEBUG "UserVar4 = ", DEC UserVar4," exiting replay",CR,CR
            'WRITE LoopIter1,255 restore value, no need to restore value
            RUN 0
            'GOTO DmpOut , comment timed out
         ENDIF
 
         STORE 0
-        WRITE DurDay,UserVar1 : WRITE DurHour,UserVar2 : WRITE DurMin,UserVar3 'Reset Event Table State
+        WRITE DurDay,UserVar5/1440 : WRITE DurHour,(UserVar5//1440)/60 : WRITE DurMin,(UserVar5//1440)//60 'Reset Event Table State
         STORE 2
         FOR TempReg0 = 2 TO 8
           WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
@@ -546,4 +540,5 @@ P3vector:
         DATA  05,  03,   25,   $FF,     06   'UV LED On, when UV LED On, store remaining number of days in UserVar0
         DATA  05,  03,   26,   $FF,     01   'Take Photo
         DATA  06,  03,   26,   $FF,     08   'Photo Loop for the rest of the time
+        DATA  06,  03,   27,   $FF,     04   'All off
 LoopIter1 DATA 255
