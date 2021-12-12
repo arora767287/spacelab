@@ -32,7 +32,7 @@ version   CON    1601
 'Start storage at top of slot6 and work downwards, code can go in slot 4, but be carful
 'not to overwrite the data storage.  Programs go from botton to top, Data storage, and
 'our data storage allocations are from the top down.  MUST BE CHECKED MANUALLY, program
-'does not know any better.
+'does not know any better. 
 '***************************************************************************************
 '
 DataStorage    CON 4                'EEROM data is storaged in Slot 4
