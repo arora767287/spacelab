@@ -19,7 +19,7 @@ version   CON    1601
 '     Conditional Assemblies
 '
 #DEFINE FlyConfig = 0              '1=Set to Flight Configuration, 0=Test Configuration
-#DEFINE fastclock = 0              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
+#DEFINE fastclock = 1              '0=Normal Time X1, 1=Medium Time ~X17 2=Fast Time ~X60
 #DEFINE testreset = 1              '1=test reset and reset count
 #DEFINE SaySlot   = 1              '1=Say Slot with vector
 #DEFINE Sayit = 1                  '1=Say what is happening
@@ -414,7 +414,8 @@ FoundEvent:
   Event4,
   Event5,
   Event6,
-  Event7]                     'Event 4
+  Event7,
+  Event8]                     'Event 4
 
   UserVar3 = 0                 'Error
   DEBUG CR,"Event Byte is out of range",CR
@@ -426,6 +427,7 @@ Event0: DEBUG CR,"REB0",CR
 
 Event1: DEBUG CR,"REB1: TakePhoto",CR
          I2COUT InternI2c, PCF8574address,[%11111110] 'IO5 high, all others off
+
          '
          '   Take a High Resoluation Photo of the Chamber
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
@@ -446,12 +448,16 @@ TakePhotoReturn:
          RUN 0        'Destination Slot
 
 Event2: DEBUG CR,"REB2: Pumps 1 On" ,CR
-        I2COUT InternI2c, PCF8574address,[%11110011]     'IO0 and IO1 high, all others off
+        UserVar4 = 14
+        UserVar5 = 1522
+        I2COUT InternI2c, PCF8574address,[%11111011]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
 Event3: DEBUG CR,"REB2: Pumps 2 On" ,CR
-        I2COUT InternI2c, PCF8574address,[%00111111]     'IO0 and IO1 high, all others off
+        UserVar4 = 3
+        UserVar5 = 3039
+        I2COUT InternI2c, PCF8574address,[%01110111]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
@@ -459,37 +465,30 @@ Event4: DEBUG CR,"REB3: Pumps Off"  ,CR
         I2COUT InternI2c, PCF8574address,[%11111111]     'All IO pins off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
+Event5: DEBUG CR,"REB1: TakePhoto",CR
+         I2COUT InternI2c, PCF8574address,[%11110110] 'IO5 high, all others off
+         '
+         '   Take a High Resoluation Photo of the Chamber
+         'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+         PUT    CameraRes,Camera640        'Template default
+         PUT    CameraQua,CameraNormal     'set to Normal
 
+         PUT VectorFromSlot,2 'Return Slot
+         PUT VectorFromNum,1  'Return Index
+         TempReg1 = 1    'Destination Index
+         TempReg3 = 6    'Destination Slot
+         RUN 6           'Execute a slot goto proceedure now doit
 DmpOut: STORE DataStorage
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
-
-Event5: DEBUG CR,"REB4: Camera Loop" ,CR
-        STORE 2
-        READ LoopIter1,TempReg0
-        TempReg0 = TempReg0-1            'decrement LoopIter1
-        DEBUG "Camera Iteration ",DEC TempReg0,CR,CR
-        WRITE LoopIter1,TempReg0          'store LoopIter1
-
-        IF TempReg0 < 1 THEN
-           DEBUG "LoopIter1 value = ", DEC tempreg0," exiting replay",CR,CR
-           WRITE LoopIter1,255 'restore value
-           GOTO DmpOut 'timed out
-        ENDIF
-
-        STORE 0
-        WRITE DurDay,1 : WRITE DurHour,12 : WRITE DurMin,31 'Reset Event Table State
-        STORE 2
-        FOR TempReg0 = 2 TO 8
-          WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
-        NEXT
-        GOTO DmpOut
-
 Event6: DEBUG CR,"REB5: UV LED", CR
-         I2COUT InternI2c, PCF8574address,[%11111101]     'All IO pins off
+         UserVar4 = 3
+         UserVar5 = 4481
+         I2COUT InternI2c, PCF8574address,[%11110101]     'All IO pins off
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
+         GOTO DmpOut
 
 Event7: DEBUG CR,"REB5: Pump 3", CR
          I2COUT InternI2c, PCF8574address,[%11001111]     'All IO pins off
@@ -497,13 +496,36 @@ Event7: DEBUG CR,"REB5: Pump 3", CR
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
 
+Event8: DEBUG CR,"Photo Loop" ,CR
+        STORE 2
+        READ LoopIter1,TempReg0
+        TempReg0 = TempReg0-1            'decrement LoopIter1
+        UserVar4 = UserVar4 - 1
+        DEBUG "Pump1 Iteration ",DEC TempReg0,CR,CR
+        WRITE LoopIter1,TempReg0          'store LoopIter1
+
+        IF UserVar4 = 0 THEN
+           DEBUG "UserVar0 = ", DEC UserVar0," exiting replay",CR,CR
+           'WRITE LoopIter1,255 restore value, no need to restore value
+
+           GOTO DmpOut 'comment timed out
+        ENDIF
+
+        STORE 0
+        WRITE DurDay,UserVar5/1440 : WRITE DurHour, (UserVar5 - (UserVar5/1440)*(1440))/60 : WRITE DurMin, (UserVar5 - (UserVar5 - (UserVar5/1440)*(1440))/60)*60 'Reset Event Table State
+        DEBUG "Days, Hours, Minutes", DEC DurDay, DurHour, DurMin
+        STORE 2
+        FOR TempReg0 = 2 TO 8
+          WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
+        NEXT
+        GOTO DmpOut
 
   '
   '======================================================================
 P1vector:
         '
         '
-  GOTO ReturnBack      'back to calling routine
+  GOTO ReturnBack      'back to calling routine                      /
 
   '
     '======================================================================
@@ -519,18 +541,20 @@ P3vector:
   GOTO ReturnBack 'back to calling routine
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  12,   01,   $FF,     02   'Pump 1 on
-        DATA  00,  12,   03,   $FF,     04   'Pump 1 off
-        DATA  00,  12,   33,   $FF,     07   'Vibrator On
-        DATA  01,  13,   32,   $FF,     02   'Pump 1 on
-        DATA  01,  14,   32,   $FF,     04   'Pump 1 off
-        DATA  01,  15,   32,   $FF,     03   'Pump 2 on
-        DATA  01,  16,   32,   $FF,     04   'Pump 2 off
-        DATA  01,  17,   32,   $FF,     07   'Vibrator
-        DATA  01,  17,   33,   $FF,     03   'Pump 2 on
-        DATA  01,  17,   33,   $FF,     04   'Pump 2 off
-        DATA  00,  12,   03,   $FF,     01   'Take Photo
-        DATA  01,  17,   33,   $FF,     05   'Camera Loop
 
+ETable DATA  00,  00,   01,   $FF,     02   'Pump 1 on.   When pump 1 on, store 14 in UserVar0
+        DATA  00,  01,   05,   $FF,     04   'Pump 1 off,
+        DATA  00,  01,   20,   $FF,     07   'Vibrator On
+        DATA  00,  01,   21,   $FF,     01   'Take Photo
+        DATA  01,  01,   21,   $FF,     08   'Photo Loop for 14 days
+        DATA  01,  01,   22,   $FF,     04   'Pumps off
+        DATA  01,  01,   23,   $FF,     03   'Pump 2 on,   When pump 2 on, store 3 in UserVar0
+        DATA  01,  02,   22,   $FF,     04   'Pumps off
+        DATA  01,  02,   37,   $FF,     07   'Vibrator On
+        DATA  01,  02,   38,   $FF,     01   'Take Photo
+        DATA  02,  02,   38,   $FF,     08   'Photo Loop for 3 days
+        DATA  02,  02,   39,   $FF,     06   'UV LED On, when UV LED On, store remaining number of days in UserVar0
+        DATA  02,  02,   40,   $FF,     01   'Take Photo
+        DATA  03,  02,   40,   $FF,     08   'Photo Loop for the rest of the time
+        DATA  03,  02,   41,   $FF,     04   'All Pumps Off
 LoopIter1 DATA 255
-
