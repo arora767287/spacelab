@@ -444,15 +444,33 @@ TakePhotoReturn:
          RUN 0        'Destination Slot
 
 Event2: DEBUG CR,"REB2: Pumps 1 On" ,CR
+        STORE 2
+        READ StoreReg4, UserVar4
+        READ StoreReg5, UserVar5
+        READ StoreReg6, TempWord
         UserVar4 = 14
-        UserVar5 = 77
+        UserVar5 = 3
+        TempWord = 77
+        WRITE StoreReg4, UserVar4
+        WRITE StoreReg5, UserVar5
+        WRITE StoreReg6, TempWord
+        STORE 4
         I2COUT InternI2c, PCF8574address,[%00111111]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
 Event3: DEBUG CR,"REB2: Pumps 2 On" ,CR
+        STORE 2
+        READ StoreReg4, UserVar4
+        READ StoreReg5, UserVar5
+        READ StoreReg6, TempWord
         UserVar4 = 3
-        UserVar5 = 1596
+        UserVar5 = 10
+        TempWord = 1596
+        WRITE StoreReg4, UserVar4
+        WRITE StoreReg5, UserVar5
+        WRITE StoreReg6, TempWord
+        STORE 4
         I2COUT InternI2c, PCF8574address,[%11110011]     'IO0 and IO1 high, all others off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
@@ -462,8 +480,16 @@ Event4: DEBUG CR,"REB3: All Off"  ,CR
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 Event5: DEBUG CR,"REB5: UV LED", CR
+         STORE 2
+         READ StoreReg4, UserVar4
+         READ StoreReg5, UserVar5
+         READ StoreReg6, TempWord
          UserVar4 = 40
-         UserVar5 = 4479
+         UserVar5 = 14
+         TempWord = 4479
+         WRITE StoreReg4, UserVar4
+         WRITE StoreReg5, UserVar5
+         STORE 4
          I2COUT InternI2c, PCF8574address,[%11111101]     'All IO pins off
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
@@ -477,15 +503,20 @@ Event6: DEBUG CR,"REB5: Pump 3", CR
          RUN 0        'Destination Slot
 
 Event7: DEBUG CR, "CAMERA REPEAT", CR
-        READ UserVar4, TempReg0
+        STORE 2
+        READ StoreReg4, UserVar4
+        READ StoreReg5, UserVar5
+        READ StoreReg6, TempWord
         UserVar4 = UserVar4 - 1
-        DEBUG "UserVar4", DEC UserVar4
+        WRITE StoreReg4, UserVar4
+        STORE 4
+        DEBUG "UserVar4 ", DEC UserVar4
         I2COUT InternI2c, PCF8574address,[%11111111]
         tempReg0 = 4 'Destination Index (EventTableReturn)
-        IF UserVar4 <> 0 THEN
-            WRITE DurDay,UserVar5/1440 : WRITE DurHour, (UserVar5 - (UserVar5/1440)*(1440))/60 : WRITE DurMin, (UserVar5 - (UserVar5 - (UserVar5/1440)*(1440))/60)*60 'Reset Event Table State
+        IF UserVar4 > 0 THEN
+            WRITE DurDay,TempWord/1440 : WRITE DurHour, (TempWord - (TempWord/1440)*(1440))/60 : WRITE DurMin, (TempWord - (TempWord - (TempWord/1440)*(1440))/60)*60 'Reset Event Table State
             DEBUG "Days, Hours, Minutes", DEC DurDay, DurHour, DurMin 'STORE 2
-            FOR TempReg0 = 3 TO 5 'Always come back to this line and then go to the next set by changing UserVar5
+            FOR TempReg0 = UserVar5 TO UserVar5 + 2 'Always come back to this line and then go to the next set by changing UserVar5
             WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
             NEXT
         END 'Otherwise, it will go to the next line
@@ -514,6 +545,11 @@ P3vector:
   GOTO ReturnBack 'back to calling routine
 
          '    Day  Hour  Min   Tag  EventByte
+
+
+StoreReg4 DATA $00 
+StoreReg5 DATA $00
+StoreReg6 DATA $00
 
 ETable  DATA  00,  00,   00,   $FF,   02  
               00,  01,   01,   $FF,   06
