@@ -466,7 +466,7 @@ Event3: DEBUG CR,"REB2: Pumps 2 On" ,CR
         READ StoreReg6, TempWord
         UserVar4 = 3
         UserVar5 = 10
-        TempWord = 1596
+        TempWord = 1716
         WRITE StoreReg4, UserVar4
         WRITE StoreReg5, UserVar5
         WRITE StoreReg6, TempWord
@@ -486,7 +486,7 @@ Event5: DEBUG CR,"REB5: UV LED", CR
          READ StoreReg6, TempWord
          UserVar4 = 40
          UserVar5 = 14
-         TempWord = 4479
+         TempWord = 4599
          WRITE StoreReg4, UserVar4
          WRITE StoreReg5, UserVar5
          STORE 4
@@ -516,7 +516,7 @@ Event7: DEBUG CR, "CAMERA REPEAT", CR
         IF UserVar4 > 0 THEN
             WRITE DurDay,TempWord/1440 : WRITE DurHour, (TempWord - (TempWord/1440)*(1440))/60 : WRITE DurMin, (TempWord - (TempWord - (TempWord/1440)*(1440))/60)*60 'Reset Event Table State
             DEBUG "Days, Hours, Minutes", DEC DurDay, DurHour, DurMin 'STORE 2
-            FOR TempReg0 = UserVar5 TO UserVar5 + 2 'Always come back to this line and then go to the next set by changing UserVar5
+            FOR TempReg0 = UserVar5 TO (UserVar5 + 2) 'Always come back to this line and then go to the next set by changing UserVar5
             WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
             NEXT
         END 'Otherwise, it will go to the next line
@@ -559,12 +559,12 @@ ETable  DATA  00,  00,   00,   $FF,   02
               01,  01,   18,   $FF,   07    'Set UserVar 5 equal to 63 somewherre before this event, and set all events to off
               01,  01,   19,   $FF,   04
               01,  01,   20,   $FF,   03
-              01,  02,   20,   $FF,   06
-              01,  02,   35,   $FF,   04
-              01,  02,   36,   $FF,   01
-              01,  02,   37,   $FF,   03
-              02,  02,   38,   $FF,   07   'Set UserVar5 for 3 day loops back to iniital minutes and set all events to off 
-              02,  02,   39,   $FF,   05
-              03,  02,   39,   $FF,   01
-              03,  02,   40,   $FF,   04
-              04,  02,   40,   $FF,   07   'Set UserVar5 for large number of loops until it returns, and set all events to off
+              01,  04,   20,   $FF,   06
+              01,  04,   35,   $FF,   04
+              01,  04,   36,   $FF,   01
+              01,  04,   37,   $FF,   03
+              02,  04,   38,   $FF,   07   'Set UserVar5 for 3 day loops back to iniital minutes and set all events to off 
+              02,  04,   39,   $FF,   05
+              03,  04,   39,   $FF,   01
+              03,  04,   40,   $FF,   04
+              04,  04,   40,   $FF,   07   'Set UserVar5 for large number of loops until it returns, and set all events to off
