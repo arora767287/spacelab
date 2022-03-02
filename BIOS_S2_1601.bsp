@@ -425,7 +425,7 @@ Event0: DEBUG CR,"REB0",CR
         RUN 0        'Destination Slot
 
 Event1: DEBUG CR,"REB1: TakePhoto",CR
-         I2COUT InternI2c, PCF8574address,[%11111110] 'IO5 high, all others off
+         I2COUT InternI2c, PCF8574address,[%11111110] 'IO5 high, all others off to switch the light on
          '
          '   Take a High Resoluation Photo of the Chamber
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
@@ -437,6 +437,8 @@ Event1: DEBUG CR,"REB1: TakePhoto",CR
          TempReg1 = 1    'Destination Index
          TempReg3 = 6    'Destination Slot
          RUN 6           'Execute a slot goto proceedure now doit
+
+
 TakePhotoReturn:
          'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
          '
@@ -446,56 +448,40 @@ TakePhotoReturn:
          RUN 0        'Destination Slot
 
 Event2: DEBUG CR,"REB2: Pumps 1 On" ,CR
-        I2COUT InternI2c, PCF8574address,[%11110011]     'IO0 and IO1 high, all others off
+        I2COUT InternI2c, PCF8574address,[%00111111]     'All IO pins off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
 Event3: DEBUG CR,"REB2: Pumps 2 On" ,CR
-        I2COUT InternI2c, PCF8574address,[%00111111]     'IO0 and IO1 high, all others off
+        I2COUT InternI2c, PCF8574address,[%11001111]     'All IO pins off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
 
-Event4: DEBUG CR,"REB3: Pumps Off"  ,CR
+Event4: DEBUG CR,"REB3: All Off"  ,CR
         I2COUT InternI2c, PCF8574address,[%11111111]     'All IO pins off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
-
-DmpOut: STORE DataStorage
+Event5: DEBUG CR,"REB5: UV LED", CR
+        I2COUT InternI2c, PCF8574address,[%11111101]     'All IO pins off
         tempReg0 = 4 'Destination Index (EventTableReturn)
         RUN 0        'Destination Slot
-
-Event5: DEBUG CR,"REB4: Camera Loop" ,CR
-        STORE 2
-        READ LoopIter1,TempReg0
-        TempReg0 = TempReg0-1            'decrement LoopIter1
-        DEBUG "Camera Iteration ",DEC TempReg0,CR,CR
-        WRITE LoopIter1,TempReg0          'store LoopIter1
-
-        IF TempReg0 < 1 THEN
-           DEBUG "LoopIter1 value = ", DEC tempreg0," exiting replay",CR,CR
-           WRITE LoopIter1,255 'restore value
-           GOTO DmpOut 'timed out
-        ENDIF
-
-        STORE 0
-        WRITE DurDay,1 : WRITE DurHour,12 : WRITE DurMin,31 'Reset Event Table State
-        STORE 2
-        FOR TempReg0 = 2 TO 8
-          WRITE ETable+(TempReg0*5)+3,$FF 'reset tag fields to allow a repeat cycle
-        NEXT
-        GOTO DmpOut
-
-Event6: DEBUG CR,"REB5: UV LED", CR
-         I2COUT InternI2c, PCF8574address,[%11111101]     'All IO pins off
-         ' Values in return back are lost when jumping to Slot 6
-         tempReg0 = 4 'Destination Index (EventTableReturn)
-         RUN 0        'Destination Slot
-
-Event7: DEBUG CR,"REB5: Pump 3", CR
+Event6: DEBUG CR,"REB5: Pump 3", CR
          I2COUT InternI2c, PCF8574address,[%11001111]     'All IO pins off
          ' Values in return back are lost when jumping to Slot 6
          tempReg0 = 4 'Destination Index (EventTableReturn)
          RUN 0        'Destination Slot
+
+Event7: DEBUG CR, "CAMERA REPEAT", CR
+        STORE 2
+        READ StoreReg4, UserVar4
+        UserVar4 = UserVar4 - 1
+        WRITE StoreReg4, UserVar4
+        DEBUG "UserVar4 ", DEC UserVar4
+        STORE 4
+        I2COUT InternI2c, PCF8574address,[%11111111]
+        tempReg0 = 4 'Destination Index (EventTableReturn)
+
+
 
 
   '
@@ -503,7 +489,7 @@ Event7: DEBUG CR,"REB5: Pump 3", CR
 P1vector:
         '
         '
-  GOTO ReturnBack      'back to calling routine
+  GOTO ReturnBack      'back to calling routine                      /
 
   '
     '======================================================================
@@ -519,18 +505,52 @@ P3vector:
   GOTO ReturnBack 'back to calling routine
 
          '    Day  Hour  Min   Tag  EventByte
- ETable DATA  00,  12,   01,   $FF,     02   'Pump 1 on
-        DATA  00,  12,   03,   $FF,     04   'Pump 1 off
-        DATA  00,  12,   33,   $FF,     07   'Vibrator On
-        DATA  01,  13,   32,   $FF,     02   'Pump 1 on
-        DATA  01,  14,   32,   $FF,     04   'Pump 1 off
-        DATA  01,  15,   32,   $FF,     03   'Pump 2 on
-        DATA  01,  16,   32,   $FF,     04   'Pump 2 off
-        DATA  01,  17,   32,   $FF,     07   'Vibrator
-        DATA  01,  17,   33,   $FF,     03   'Pump 2 on
-        DATA  01,  17,   33,   $FF,     04   'Pump 2 off
-        DATA  00,  12,   03,   $FF,     01   'Take Photo
-        DATA  01,  17,   33,   $FF,     05   'Camera Loop
-
-LoopIter1 DATA 255
-
+ETable  DATA  00,  00,   00,   $FF,   02,
+              00,  01,   17,   $FF,   01,
+              00,  01,   27,   $FF,   02,
+              01,  01,   27,   $FF,   01,
+              01,  01,   37,   $FF,   02,
+              02,  01,   37,   $FF,   01,
+              02,  01,   47,   $FF,   02,
+              03,  01,   47,   $FF,   01,
+              03,  01,   57,   $FF,   02,
+              04,  01,   57,   $FF,   01,
+              04,  02,   07,   $FF,   02,
+              05,  02,   07,   $FF,   01,
+              05,  02,   17,   $FF,   02,
+              06,  02,   17,   $FF,   01,
+              06,  02,   27,   $FF,   02,
+              07,  02,   27,   $FF,   01,
+              07,  02,   37,   $FF,   02,
+              08,  02,   37,   $FF,   01,
+              08,  02,   47,   $FF,   02,
+              09,  02,   47,   $FF,   01,
+              09,  02,   57,   $FF,   02,
+              10,  02,   57,   $FF,   01,
+              10,  03,   07,   $FF,   02,
+              11,  03,   07,   $FF,   01,
+              11,  03,   17,   $FF,   02,
+              12,  03,   17,   $FF,   01,
+              12,  03,   27,   $FF,   02,
+              13,  03,   27,   $FF,   01,
+              13,  03,   37,   $FF,   02,
+              14,  03,   37,   $FF,   01,
+              14,  03,   47,   $FF,   02,
+              14,  03,   50,   $FF,   03,
+              14,  06,   50,   $FF,   01,
+              14,  07,   00,   $FF,   02,
+              15,  07,   00,   $FF,   01,
+              15,  07,   10,   $FF,   02,
+              16,  07,   10,   $FF,   01,
+              16,  07,   20,   $FF,   02,
+              17,  07,   20,   $FF,   01,
+              17,  07,   30,   $FF,   04,
+              18,  07,   30,   $FF,   05,
+              19,  07,   30,   $FF,   01,
+              19,  07,   40,   $FF,   04,
+              20,  07,   40,   $FF,   01,
+              20,  07,   50,   $FF,   04,
+              21,  07,   50,   $FF,   01,
+              21,  08,   00,   $FF,   04,
+              22,  08,   00,   $FF,   01,
+              22,  08,   10,   $FF,   04
